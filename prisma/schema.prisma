@@ -1,0 +1,23 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+
+model Agremiado {
+  id            Int      @id @default(autoincrement())
+  cop           String   @unique
+  nombres       String
+  apellidos     String
+  colegio       String
+  estado        String   // Ej: ACTIVO, INACTIVO
+  habilitado    String   // Ej: ACTIVO, INACTIVO
+  fechaRegistro DateTime @default(now())
+}

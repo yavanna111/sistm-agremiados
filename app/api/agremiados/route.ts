@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import db from "@/lib/db";
+import db from "../../lib/db";
 
 // Este método GET servirá para BUSCAR y LISTAR
 export async function GET() {
@@ -15,6 +15,12 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+
+    //  Validación que no vengan vacíos
+
+    if (!body.cop || !body.nombres || !body.apellidos) {
+      return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 });
+    }
     
     const nuevoAgremiado = await db.agremiado.create({
       data: {
@@ -28,7 +34,17 @@ export async function POST(request: Request) {
     });
 
     return NextResponse.json(nuevoAgremiado);
-  } catch (error) {
-    return NextResponse.json({ error: "Error al crear registro (¿COP duplicado?)" }, { status: 400 });
+  } catch (error:any) {
+
+    console.error("Error al crear agremiado:", error);
+
+    // clave única para el campo 'cop'
+    if (error.code === 'P2002') {
+      return NextResponse.json({ error: "El número de COP ya está registrado" }, { status: 409 });
+    }
+
+    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
+
+
   }
 }

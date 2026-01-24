@@ -15,36 +15,49 @@ export async function GET() {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
+    const { id, cop, nombres, apellidos, colegio, estado, habilitado } = body;
 
-    //  Validación que no vengan vacíos
-
-    if (!body.cop || !body.nombres || !body.apellidos) {
-      return NextResponse.json({ error: "Faltan campos obligatorios" }, { status: 400 });
-    }
-    
-    const nuevoAgremiado = await db.agremiado.create({
-      data: {
-        cop: body.cop,
-        nombres: body.nombres.toUpperCase(),
-        apellidos: body.apellidos.toUpperCase(),
-        colegio: body.colegio,
-        estado: body.estado,
-        habilitado: body.habilitado,
+    // UPSERT: El comando "2 en 1" de Prisma
+    const resultado = await db.agremiado.upsert({
+      where: { 
+        // Si 'id' es undefined o null, usamos -1 para forzar la creación
+        id: id ? Number(id) : -1 
+      },
+      update: {
+        cop: String(cop),
+        nombres: nombres.toUpperCase(),
+        apellidos: apellidos.toUpperCase(),
+        colegio,
+        estado,
+        habilitado,
+      },
+      create: {
+        cop: String(cop),
+        nombres: nombres.toUpperCase(),
+        apellidos: apellidos.toUpperCase(),
+        colegio: colegio || "GENERAL",
+        estado: estado || "ACTIVO",
+        habilitado: habilitado || "SI",
       },
     });
 
-    return NextResponse.json(nuevoAgremiado);
-  } catch (error:any) {
+    return NextResponse.json(resultado);
+  } catch (error: any) {
+    console.error("Error en el servidor:", error);
+    return NextResponse.json({ error: "No se pudo procesar la solicitud" }, { status: 500 });
+  }
+}
+export async function DELETE(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const id = searchParams.get('id');
 
-    console.error("Error al crear agremiado:", error);
+    await db.agremiado.delete({
+      where: { id: Number(id) },
+    });
 
-    // clave única para el campo 'cop'
-    if (error.code === 'P2002') {
-      return NextResponse.json({ error: "El número de COP ya está registrado" }, { status: 409 });
-    }
-
-    return NextResponse.json({ error: "Error interno del servidor" }, { status: 500 });
-
-
+    return NextResponse.json({ message: "Eliminado" });
+  } catch (error) {
+    return NextResponse.json({ error: "Error al eliminar" }, { status: 500 });
   }
 }

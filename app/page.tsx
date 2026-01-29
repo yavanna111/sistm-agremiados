@@ -384,10 +384,10 @@ export default function PaginaAgremiados() {
       {/* MODAL DE VISUALIZACIÓN */}
       {verAgremiado && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-<div 
+          <div 
       className="absolute inset-0 bg-slate-900/40 backdrop-blur-sm animate-in fade-in duration-500"
       onClick={() => setVerAgremiado(null)}
-    ></div>
+      ></div>
 
          <div className="bg-white rounded-3xl max-w-md w-full p-8 shadow-2xl z-10 
                     animate-in zoom-in-95 slide-in-from-bottom-10 duration-500 ease-out">
